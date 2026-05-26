@@ -1,6 +1,26 @@
 # Roundtable
 
+[![Build](https://github.com/greatbody/roundtable/actions/workflows/build.yml/badge.svg)](https://github.com/greatbody/roundtable/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Container](https://img.shields.io/badge/ghcr.io-greatbody%2Froundtable-2496ED?logo=docker)](https://github.com/greatbody/roundtable/pkgs/container/roundtable)
+
 后台驱动的多智能体讨论平台。讨论运行在后台，WebUI 仅作交互窗口；关闭浏览器讨论照常进行。
+
+## 一键运行（Docker）
+
+```bash
+docker run -d --name roundtable -p 3001:3001 \
+  -v roundtable-data:/data \
+  -e DEEPSEEK_API_KEY=sk-... \
+  -e OIDC_ISSUER=https://your-sso.example.com \
+  -e OIDC_CLIENT_ID=... \
+  -e OIDC_CLIENT_SECRET=... \
+  -e PUBLIC_BASE_URL=http://localhost:3001 \
+  -e SESSION_SECRET="$(openssl rand -base64 48)" \
+  ghcr.io/greatbody/roundtable:latest
+```
+
+镜像支持 `linux/amd64` + `linux/arm64`，约 103 MB。
 
 ## 核心特性
 
