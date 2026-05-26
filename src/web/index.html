@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roundtable — 多智能体讨论</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Roundtable</h1>
+    <span class="subtitle">后台多智能体讨论 · 测试版</span>
+    <span id="user-badge" class="user-badge" hidden></span>
+    <button id="btn-theme" type="button" title="切换主题">🌙 夜间</button>
+    <span id="health" class="health">●</span>
+  </header>
+
+  <main>
+    <aside id="sidebar">
+      <section class="nav-section" data-section="pool">
+        <div class="row-head">
+          <h2 class="section-title" data-toggle="pool">智能体 <span class="section-caret">⌄</span></h2>
+          <button id="btn-create-pool-agent" class="ghost">+ 创建</button>
+        </div>
+        <ul id="pool-agents"></ul>
+      </section>
+      <section class="nav-section" data-section="groups">
+        <div class="row-head">
+          <h2 class="section-title" data-toggle="groups">讨论组 <span class="section-caret">⌄</span></h2>
+          <button id="btn-new-group" class="ghost">+ 新建</button>
+        </div>
+        <ul id="groups"></ul>
+      </section>
+      <section class="nav-section" data-section="conversations">
+        <div class="row-head">
+          <h2 class="section-title" data-toggle="conversations">会话 <span class="section-caret">⌄</span></h2>
+          <button id="btn-new-conv" class="ghost" disabled>+ 新会话</button>
+        </div>
+        <ul id="conversations"></ul>
+      </section>
+    </aside>
+
+    <section id="main">
+      <div id="empty-state" class="empty">
+        <div>从左侧选择一个会话<br><span style="font-size:12px;color:var(--fg-muted)">或新建一个开始讨论</span></div>
+      </div>
+      <div id="conv-view" class="hidden">
+        <div id="conv-header">
+          <div>
+            <h2 id="conv-topic"></h2>
+            <div id="conv-meta" class="meta"></div>
+          </div>
+          <div class="actions">
+            <button id="btn-poke" title="立即触发一次邀请周期">催一下</button>
+            <button id="btn-pause">暂停</button>
+            <button id="btn-resume" class="hidden">继续</button>
+            <button id="btn-finish">结束</button>
+          </div>
+        </div>
+        <div id="participants" class="participants"></div>
+        <div id="topic-bar" class="topic-bar">
+          <input id="new-topic" placeholder="🎯 抛出新问题/话题（提交后写入讨论流并立即唤醒所有智能体思考）" />
+          <button id="btn-set-topic">提出</button>
+        </div>
+        <div id="events-wrap">
+          <div id="events" class="events"></div>
+          <button id="scroll-bottom" class="scroll-bottom hidden" title="跳到最新消息">
+            <span class="arrow">↓</span>
+            <span class="count hidden" id="scroll-bottom-count">0</span>
+          </button>
+        </div>
+        <div id="composer">
+          <textarea id="user-input" placeholder="对群组说点什么…  可在文本里写 @id 或在下拉里点 @ 某人"></textarea>
+          <div class="compose-bar">
+            <select id="address-select">
+              <option value="">— 不 @ 任何人 —</option>
+            </select>
+            <button id="btn-stop" class="danger hidden" title="终止本轮讨论">⏹ 停止本轮</button>
+            <button id="btn-send">发送</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modals -->
+  <dialog id="dlg-new-group">
+    <form method="dialog">
+      <h3>新建讨论组</h3>
+      <label>名称 <input id="g-name" required /></label>
+      <label>描述 <input id="g-desc" /></label>
+      <h4>初始智能体（至少 2 个，每行一个：名字|人设）</h4>
+      <textarea id="g-agents" rows="8" placeholder="产品经理|你是产品经理，关注用户价值与优先级...&#10;工程师|你是资深工程师，关注可行性与技术风险..."></textarea>
+      <div class="actions">
+        <button value="cancel">取消</button>
+        <button id="btn-create-group" value="default">创建</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-new-conv">
+    <form method="dialog">
+      <h3>新建会话</h3>
+      <p>群组：<span id="c-group-name"></span></p>
+      <label>话题
+        <textarea id="c-topic" rows="3" required></textarea>
+      </label>
+      <h4>选择参与者（至少 2 个）</h4>
+      <div id="c-participants"></div>
+      <div class="actions">
+        <button value="cancel">取消</button>
+        <button id="btn-create-conv" value="default">启动</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-edit-agent">
+    <form method="dialog">
+      <h3>编辑智能体</h3>
+      <label>显示名称
+        <input id="e-name" />
+      </label>
+      <label>人设 / 思维方式 / 背景（系统提示词）
+        <textarea id="e-persona" rows="10" placeholder="详细描述这个智能体的身份、思维框架、知识背景、表达风格..."></textarea>
+      </label>
+      <div class="form-grid">
+        <label>服务商:模型
+          <input id="e-provider" placeholder="deepseek:deepseek-chat" />
+          <small class="field-hint">格式：服务商id:模型名。例：<code>deepseek:deepseek-chat</code></small>
+        </label>
+        <label>温度
+          <input id="e-temp" type="number" step="0.1" min="0" max="2" />
+          <small class="field-hint">
+            控制回复的随机性 / 创造性。<br>
+            <b>0 ~ 0.3</b>：严谨、保守、可复现，适合医学/法律/数学场景。<br>
+            <b>0.4 ~ 0.7</b>：平衡，多智能体讨论推荐区间。<br>
+            <b>0.8 ~ 1.2</b>：发散、富创造性，适合头脑风暴。<br>
+            <b>> 1.2</b>：高度随机，回复可能离题。<br>
+            默认 0.7。
+          </small>
+        </label>
+        <label>最大输出 token 数
+          <input id="e-maxout" type="number" min="50" max="4000" />
+          <small class="field-hint">单次回复的最大长度上限。设过低会被截断；过高浪费 token。讨论建议 400-800。</small>
+        </label>
+        <label>健谈倾向
+          <input id="e-talk" placeholder="平衡 / 安静 / 健谈" />
+          <small class="field-hint">自由文本，可作为人设修饰提示。当前不强制使用。</small>
+        </label>
+        <label>连续沉默阈值
+          <input id="e-silent" type="number" min="1" max="10" />
+          <small class="field-hint">当前轮次模型下此字段不生效（保留向后兼容）。</small>
+        </label>
+      </div>
+      <div class="actions">
+        <button value="cancel">取消</button>
+        <button id="btn-save-agent" value="default">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-pick-agents">
+    <form method="dialog">
+      <h3>从智能体池添加成员 — <span id="pk-group-name"></span></h3>
+      <p class="hint">勾选要加入此讨论组的智能体。同一智能体可被多个组复用，编辑会同步给所有组（仅影响未来新会话）。</p>
+      <div id="pk-list" class="agent-list"></div>
+      <div class="actions">
+        <button value="cancel">取消</button>
+        <button id="btn-pick-confirm" value="default">添加</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/app.js"></script>
+</body>
+</html>

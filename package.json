@@ -1,0 +1,16 @@
+{
+  "name": "roundtable",
+  "version": "0.1.0",
+  "description": "Multi-agent discussion platform with backend-driven conversations and self-determining agents",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.5.0"
+  }
+}
