@@ -1,0 +1,45 @@
+# Roundtable — Docker Compose 部署示例
+#
+# 使用步骤：
+#   1. cp .env.example .env  并填写所有变量
+#   2. docker compose up -d
+#   3. 浏览器访问 PUBLIC_BASE_URL
+#
+# 数据持久化：SQLite 数据库存放在 named volume `roundtable_data` 中（容器内 /data）
+# 升级方式：docker compose pull && docker compose up -d
+
+services:
+  roundtable:
+    image: ghcr.io/greatbody/roundtable:latest
+    container_name: roundtable
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3001}:3001"
+    environment:
+      # --- LLM ---
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+
+      # --- Server ---
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL}
+
+      # --- OIDC (Rauthy 或其他) ---
+      OIDC_ISSUER: ${OIDC_ISSUER}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET}
+      # OIDC_REDIRECT_URI: ${PUBLIC_BASE_URL}/auth/callback   # 默认即此
+
+      # --- Session ---
+      SESSION_SECRET: ${SESSION_SECRET}
+
+    volumes:
+      - roundtable_data:/data
+
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:3001/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  roundtable_data:

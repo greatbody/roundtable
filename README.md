@@ -22,6 +22,8 @@ docker run -d --name roundtable -p 3001:3001 \
 
 镜像支持 `linux/amd64` + `linux/arm64`，约 103 MB。
 
+> 更推荐使用 **[docker-compose/](./docker-compose/)** 目录里的 compose 模板，自带 named volume、healthcheck 和 `.env` 模板。
+
 ## 核心特性
 
 - **讨论组（Group）** = agent 身份模板集合（无数据）
