@@ -89,8 +89,9 @@
       <h3>新建讨论组</h3>
       <label>名称 <input id="g-name" required /></label>
       <label>描述 <input id="g-desc" /></label>
-      <h4>初始智能体（至少 2 个，每行一个：名字|人设）</h4>
-      <textarea id="g-agents" rows="8" placeholder="产品经理|你是产品经理，关注用户价值与优先级...&#10;工程师|你是资深工程师，关注可行性与技术风险..."></textarea>
+      <h4>初始智能体（从智能体池中选择，至少 2 个）</h4>
+      <p class="hint">勾选要加入此讨论组的已有智能体。同一智能体可被多个组复用。如池中智能体不足，请先在"智能体池"区域创建。</p>
+      <div id="g-agents-list" class="agent-list"></div>
       <div class="actions">
         <button value="cancel">取消</button>
         <button id="btn-create-group" value="default">创建</button>

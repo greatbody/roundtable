@@ -262,30 +262,37 @@
     $("#btn-new-conv").disabled = false;
   }
 
-  function openNewGroupDialog() {
+  async function openNewGroupDialog() {
     $("#g-name").value = "产品评审组";
     $("#g-desc").value = "围绕一个产品方案展开多角度评审";
-    $("#g-agents").value =
-      "产品经理|你是产品经理，关注用户价值、需求优先级与商业目标，发言简洁有条理。\n" +
-      "工程师|你是资深工程师，关注可行性、复杂度与维护成本，会指出技术风险。\n" +
-      "设计师|你是设计师，关注用户体验、交互流程与可用性，敢于挑战不合理的设计。";
+    await refreshPool();
+    const box = $("#g-agents-list");
+    box.innerHTML = "";
+    if (state.poolAgents.length === 0) {
+      box.innerHTML = '<div class="hint">智能体池为空。请先在左侧"智能体池"区域创建至少 2 个智能体，再来创建讨论组。</div>';
+    } else {
+      for (const a of state.poolAgents) {
+        const row = document.createElement("div");
+        row.className = "participant-check";
+        const id = "ng_" + a.id;
+        row.innerHTML = `<input type="checkbox" id="${id}" value="${a.id}" />
+          <label for="${id}"><b>${escapeHtml(a.display_name)}</b> — ${escapeHtml(truncate(a.persona, 80))}</label>`;
+        box.appendChild(row);
+      }
+    }
     $("#dlg-new-group").showModal();
   }
 
   async function submitNewGroup() {
     const name = $("#g-name").value.trim();
     const desc = $("#g-desc").value.trim();
-    const lines = $("#g-agents").value.split("\n").map((s) => s.trim()).filter(Boolean);
-    if (!name || lines.length < 2) { alert("需要名称和至少 2 个智能体"); return; }
+    const ids = $$("#g-agents-list input:checked").map((el) => el.value);
+    if (!name) { alert("请填写名称"); return; }
+    if (ids.length < 2) { alert("请至少选择 2 个智能体"); return; }
     try {
       const g = await api("POST", "/api/groups", { name, description: desc });
-      for (const line of lines) {
-        const [dn, persona] = line.split("|");
-        if (!dn || !persona) continue;
-        await api("POST", `/api/groups/${g.id}/agents`, {
-          display_name: dn.trim(),
-          persona: persona.trim(),
-        });
+      for (const aid of ids) {
+        await api("POST", `/api/groups/${g.id}/members`, { agent_id: aid });
       }
       $("#dlg-new-group").close();
       await refreshGroups();
