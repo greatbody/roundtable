@@ -386,7 +386,7 @@ function createAgentDef(
     version: 1,
     display_name: body.display_name ?? "无名 Agent",
     persona: body.persona ?? "",
-    provider_binding: body.provider_binding ?? "deepseek:deepseek-chat",
+    provider_binding: body.provider_binding ?? "deepseek:deepseek-v4-pro",
     model_params: body.model_params ?? { temperature: 0.7, max_output_tokens: 600 },
     speaking_policy: body.speaking_policy ?? {
       cooldown_turns: 1,

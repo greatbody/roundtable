@@ -81,7 +81,7 @@ export interface AgentDefinition {
   version: number;
   display_name: string;
   persona: string;
-  provider_binding: string;          // e.g. "deepseek:deepseek-chat"
+  provider_binding: string;          // e.g. "deepseek:deepseek-v4-pro"
   model_params: ModelParams;
   speaking_policy: SpeakingPolicy;
   compression_policy: CompressionPolicy;

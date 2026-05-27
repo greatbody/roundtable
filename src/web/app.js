@@ -692,7 +692,7 @@
     $("#dlg-edit-agent").querySelector("h3").textContent = title;
     $("#e-name").value = "";
     $("#e-persona").value = "";
-    $("#e-provider").value = "deepseek:deepseek-chat";
+    $("#e-provider").value = "deepseek:deepseek-v4-pro";
     $("#e-temp").value = 0.7;
     $("#e-maxout").value = 600;
     $("#e-talk").value = "balanced";
@@ -719,7 +719,7 @@
     const payload = {
       display_name: $("#e-name").value.trim(),
       persona: $("#e-persona").value.trim(),
-      provider_binding: $("#e-provider").value.trim() || "deepseek:deepseek-chat",
+      provider_binding: $("#e-provider").value.trim() || "deepseek:deepseek-v4-pro",
       model_params: {
         temperature: parseFloat($("#e-temp").value) || 0.7,
         max_output_tokens: parseInt($("#e-maxout").value, 10) || 600,
